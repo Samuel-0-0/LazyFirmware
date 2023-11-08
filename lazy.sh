@@ -140,7 +140,7 @@ M8P=fea6ca620740
 #---------------------------------------------------------------------------------------------
 #  2、主板klipper配置文件路径
 #---------------------------------------------------------------------------------------------
-EBB_CONFIG=~/LazyFirmware/config/scripts/btt-ebb-g0/can_1m.config
+EBB_CONFIG=~/LazyFirmware/config/btt-ebb-g0/can_1m.config
 M8P_CAN_BRIDGE_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
 #M8P_USB_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/usb.config
 
