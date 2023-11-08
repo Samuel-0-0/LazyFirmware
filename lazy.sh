@@ -23,7 +23,8 @@ default=$(echo -en "\e[39m")
 UPDATE_MCU() {
     echo -e ""
     echo -e "${yellow}准备更新klipper固件，匹配配置文件...${default}"
-    cp -f $3 ~/klipper/.config
+    echo -e "$2"
+    cp -f $2 ~/klipper/.config
     if [ $? -eq 0 ]
     then
         echo -e "${green}配置文件匹配完成${default}"
@@ -42,27 +43,38 @@ UPDATE_MCU() {
     read -e -p "${yellow}固件编译完成，请检查上面是否有错误。 按键盘 [Enter] 继续更新固件，或者按 [Ctrl+C] 取消${default}"
     echo -e ""
     # 如果使用CAN固件
-    if [ "$1" == "CAN" ]; then
-        python3 ~/katapult/scripts/flashtool.py -i can0 -f ~/klipper/out/klipper.bin -u $2
-    # 如果使用CAN_BRIDGE固件
-    elif [ "$1" == "CAN_BRIDGE" ]; then        
-        python3 ~/katapult/scripts/flashtool.py -i can0 -u $2 -r
+    if [ "$3" == "CAN" ]; then
+        python3 ~/katapult/scripts/flashtool.py -i can0 -f ~/klipper/out/klipper.bin -u $1
+    # 如果使用CAN_BRIDGE固件，并且使用DFU模式更新
+    elif [ "$3" == "CAN_BRIDGE_DFU" ]; then        
+        python3 ~/katapult/scripts/flashtool.py -i can0 -u $1 -r
         echo -e ""
-        echo -e "${red}CAN BRIDGE固件的控制板进DFU需要一点点时间，为了保险一点，请耐心等待5秒。${default}"
+        echo -e "${red}正在将控制板切换到DFU，请耐心等待5秒...${default}"
         echo -e ""
         # 等待5秒
         sleep 5 &
         wait
         # 进入DFU模式后的设备FLASH_DEVICE通常是0483:df11
         make flash FLASH_DEVICE=0483:df11
+    # 如果使用CAN_BRIDGE固件，并且使用KATAPULT更新
+    elif [ "$3" == "CAN_BRIDGE_KATAPULT" ]; then        
+        python3 ~/katapult/scripts/flashtool.py -i can0 -u $1 -r
+        echo -e ""
+        echo -e "${red}正在将控制板切换到KATAPULT，请耐心等待5秒...${default}"
+        echo -e ""
+        # 等待5秒
+        sleep 5 &
+        wait
+        # 进入KATAPULT后的设备有独立的通讯端口号
+        python3 ~/katapult/scripts/flashtool.py -d $4
     # 如果使用USB固件
-    elif [ "$1" == "USB" ]; then
-        make flash FLASH_DEVICE=$2
+    elif [ "$3" == "USB" ]; then
+        make flash FLASH_DEVICE=$1
     fi
     if [ $? -eq 0 ]
     then
         echo -e ""
-        echo -e "${green}已完成 $2 固件更新${default}"
+        echo -e "${green}已完成 $1 固件更新${default}"
         cd ~
     else
         echo -e ""
@@ -121,7 +133,7 @@ else
 fi
 
 ##检查katapult
-check_katapult
+#check_katapult
 
 ##############################################################################################
 #  >>>用户配置区域<<<
@@ -133,9 +145,11 @@ check_katapult
 #  CAN或者CAN Bridge固件使用命令：
 #  "~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0" 获取CAN UUID
 
-EBB=ea733e4b9026
-M8P=fea6ca620740
-#M8P_USB=/dev/serial/by-id/usb-Klipper_stm32...
+EBB_UUID=c5360983cdc4
+M8P_UUID=962b136468fc
+M8P_KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373135-if00
+#M8P_SERIAL=/dev/serial/by-id/usb-Klipper_stm32...
+#OCTOPUS_PRO_SERIAL=/dev/serial/by-id/usb-Klipper_stm32...
 
 #---------------------------------------------------------------------------------------------
 #  2、主板klipper配置文件路径
@@ -143,18 +157,21 @@ M8P=fea6ca620740
 EBB_CONFIG=~/LazyFirmware/config/btt-ebb-g0/can_1m.config
 M8P_CAN_BRIDGE_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
 #M8P_USB_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/usb.config
+#OCTOPUS_PRO_CAN_BRIDGE_CONFIG=~/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
 
 #---------------------------------------------------------------------------------------------
-#  3、需要更新的主板
+#  3、更新方案
 #---------------------------------------------------------------------------------------------
-#  使用方法：UPDATE_MCU [CAN/CAN_BRIDGE/USB] [mcu] [mcu_config]
-#  其中[CAN/CAN_BRIDGE/USB]分别表示固件类型，
-#  [mcu]表示主板的UUID或者通讯端口，
-#  [mcu_config]表示对应主板klipper配置文件路径
+#  使用方法：
+#  UPDATE_MCU [MCU] [MCU_CONFIG] [CAN/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/USB] [KATAPULT_SERIAL]
+#  其中[MCU]表示主板的UUID或者通讯端口，[MCU_CONFIG]表示对应主板klipper配置文件路径，
+#  [CAN/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/USB]分别对应不同的更新方式，
+#  CAN_BRIDGE_KATAPULT方式需要附带主板在进入KATAPULT状态后的通讯端口
 
-UPDATE_MCU CAN $EBB $EBB_CONFIG
-UPDATE_MCU CAN_BRIDGE $M8P $M8P_CAN_BRIDGE_CONFIG
-#UPDATE_MCU USB $M8P_USB $M8P_USB_CONFIG
+UPDATE_MCU $EBB_UUID $EBB_CONFIG CAN
+UPDATE_MCU $M8P_UUID $M8P_CAN_BRIDGE_CONFIG CAN_BRIDGE_KATAPULT $M8P_KATAPULT_SERIAL
+#UPDATE_MCU $M8P_SERIAL $M8P_USB_CONFIG USB
+#UPDATE_MCU $OCTOPUS_PRO_SERIAL $OCTOPUS_PRO_CAN_BRIDGE_CONFIG CAN_BRIDGE_DFU
 
 ##############################################################################################
 
