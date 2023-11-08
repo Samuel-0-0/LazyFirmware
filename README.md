@@ -1,0 +1,2 @@
+# LazyFirmware
+适合懒人一键升级3D打印机控制板MCU的Klipper固件
