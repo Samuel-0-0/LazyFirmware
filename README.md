@@ -9,7 +9,12 @@ cd ~
 git clone https://github.com/Samuel-0-0/LazyFirmware
 ```
 
-### 二、修改lazy.sh文件
+### 二、安装依赖
+```
+pip3 install pyserial
+```
+
+### 三、修改lazy.sh文件
 找到下面的内容
 ```
 ##############################################################################################
@@ -18,13 +23,15 @@ git clone https://github.com/Samuel-0-0/LazyFirmware
 #---------------------------------------------------------------------------------------------
 #  1、主板CAN UUID或者通讯端口
 #---------------------------------------------------------------------------------------------
-#  USB固件使用命令： "ls -l /dev/serial/by-id/" 获取通讯端口号填入下方
+#  USB固件(包括使用USB通讯的KATAPULT固件)使用命令： "ls -l /dev/serial/by-id/" 获取通讯端口号填入下方
 #  CAN或者CAN Bridge固件使用命令：
 #  "~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0" 获取CAN UUID
 
-EBB=ea733e4b9026
-M8P=fea6ca620740
-#M8P_USB=/dev/serial/by-id/usb-Klipper_stm32...
+EBB_UUID=c5360983cdc4
+M8P_UUID=962b136468fc
+M8P_KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373135-if00
+#M8P_SERIAL=/dev/serial/by-id/usb-Klipper_stm32...
+#OCTOPUS_PRO_SERIAL=/dev/serial/by-id/usb-Klipper_stm32...
 
 #---------------------------------------------------------------------------------------------
 #  2、主板klipper配置文件路径
@@ -32,18 +39,21 @@ M8P=fea6ca620740
 EBB_CONFIG=~/LazyFirmware/config/btt-ebb-g0/can_1m.config
 M8P_CAN_BRIDGE_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
 #M8P_USB_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/usb.config
+#OCTOPUS_PRO_CAN_BRIDGE_CONFIG=~/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
 
 #---------------------------------------------------------------------------------------------
-#  3、需要更新的主板
+#  3、更新方案
 #---------------------------------------------------------------------------------------------
-#  使用方法：UPDATE_MCU [CAN/CAN_BRIDGE/USB] [mcu] [mcu_config]
-#  其中[CAN/CAN_BRIDGE/USB]分别表示固件类型，
-#  [mcu]表示主板的UUID或者通讯端口，
-#  [mcu_config]表示对应主板klipper配置文件路径
+#  使用方法：
+#  UPDATE_MCU [MCU] [MCU_CONFIG] [CAN/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/USB] [KATAPULT_SERIAL]
+#  其中[MCU]表示主板的UUID或者通讯端口，[MCU_CONFIG]表示对应主板klipper配置文件路径，
+#  [CAN/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/USB]分别对应不同的更新方式，
+#  CAN_BRIDGE_KATAPULT方式需要附带主板在进入KATAPULT状态后的通讯端口
 
-UPDATE_MCU CAN $EBB $EBB_CONFIG
-UPDATE_MCU CAN_BRIDGE $M8P $M8P_CAN_BRIDGE_CONFIG
-#UPDATE_MCU USB $M8P_USB $M8P_USB_CONFIG
+UPDATE_MCU $EBB_UUID $EBB_CONFIG CAN
+UPDATE_MCU $M8P_UUID $M8P_CAN_BRIDGE_CONFIG CAN_BRIDGE_KATAPULT $M8P_KATAPULT_SERIAL
+#UPDATE_MCU $M8P_SERIAL $M8P_USB_CONFIG USB
+#UPDATE_MCU $OCTOPUS_PRO_SERIAL $OCTOPUS_PRO_CAN_BRIDGE_CONFIG CAN_BRIDGE_DFU
 
 ##############################################################################################
 
@@ -71,7 +81,7 @@ btt-manta-m8p-h723/can_bridge_1m.config
 速率：250k/500k/1m
 ```
 
-### 三、更新MCU固件
+### 四、更新MCU固件
 执行
 ```
 cd ~
