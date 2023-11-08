@@ -16,7 +16,7 @@ yellow=$(echo -en "\e[93m")
 red=$(echo -en "\e[91m")
 default=$(echo -en "\e[39m")
 
-### ROOT检测
+## ROOT检测
 [ $(id -u) -eq 0 ] || [ "$EUID" -eq 0 ] && echo -e "${red}请不要以ROOT身份或者SUDO运行本脚本！在需要的时候，脚本会请求相应的权限。${default}" && exit 1
 
 ##更新控制板固件
