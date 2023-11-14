@@ -25,8 +25,7 @@ default=$(echo -en "\e[39m")
 
 ##更新控制板固件
 update_mcu() {
-    echo -e ""
-    echo -e "${yellow}准备更新klipper固件，匹配配置文件...${default}"
+    echo -e "${yellow}匹配配置文件...${default}"
     echo -e "$2"
     cp -f $2 ~/klipper/.config
     if [ $? -eq 0 ]
@@ -157,7 +156,7 @@ get_config() {
     key=$2
     #echo "参数1：$section"
     #echo "参数2：$key"
-    value=`awk -F '=' '/\['$section'\]/{a=1}a==1&&$1~/'$key'/{print $2;exit}' $config_file`
+    value=`awk -F '=' '/\['$section'\]/{a=1}a==1&&$1~/'$key'/{print $2;exit}' $config_file | tr -d '\r'`
     echo "$value"
 }
 
