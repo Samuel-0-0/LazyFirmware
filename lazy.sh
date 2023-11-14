@@ -25,9 +25,8 @@ default=$(echo -en "\e[39m")
 
 ##更新控制板固件
 update_mcu() {
-    echo -e "${yellow}匹配配置文件...${default}"
-    echo -e "$2"
-    cp -f $2 ~/klipper/.config
+    echo -e "${yellow}匹配配置文件...$2${default}"
+    cp -f "$2" ~/klipper/.config
     if [ $? -eq 0 ]
     then
         echo -e "${green}配置文件匹配完成${default}"
@@ -73,17 +72,6 @@ update_mcu() {
     # 如果使用USB固件
     elif [ "$3" == "USB" ]; then
         make flash FLASH_DEVICE=$1
-    fi
-    if [ $? -eq 0 ]
-    then
-        echo -e ""
-        echo -e "${green}已完成 $1 固件更新${default}"
-        cd ~
-    else
-        echo -e ""
-        echo -e "${red}固件更新失败，详情请查看上方信息${default}"
-        cd ~
-        exit 1
     fi
 }
 
@@ -179,28 +167,39 @@ if [ -f "$config_file" ]; then
         fi
     done < "$config_file"
     
-    echo -e "${green}当前配置共有${#sections[@]}块主板需要升级固件${default}"
+    echo -e "${green}共有${#sections[@]}块主板需要更新固件${default}"
 
     # 停止klipper服务
     stop_klipper_service
 
-    # 依次执行升级
+    # 依次执行更新
     for section in "${sections[@]}"; do
         echo -e ""
-        echo -e "${yellow}准备升级 $section ...${default}"
+        echo -e "${yellow}准备更新 $section ...${default}"
         ID=`get_config $section "ID"`
         #echo "$ID"
         MODE=`get_config $section "MODE"`
         #echo "$MODE"
         CONFIG=`get_config $section "CONFIG"`
         #echo "$CONFIG"
-        if [[ $MODE =~ "CAN_BRIDGE_KATAPULT" ]]; then
+        if [ "$MODE" == "CAN_BRIDGE_KATAPULT" ]; then
             KATAPULT_SERIAL=`get_config $section "KATAPULT_SERIAL"`
             #echo "$KATAPULT_SERIAL"
             update_mcu $ID $CONFIG $MODE $KATAPULT_SERIAL
         else
-            echo ""
+            #echo ""
             update_mcu $ID $CONFIG $MODE
+        fi
+        if [ $? -eq 0 ]
+        then
+            echo -e ""
+            echo -e "${green}已完成 $section 固件更新${default}"
+            cd ~
+        else
+            echo -e ""
+            echo -e "${red}$section 固件更新失败，详情请查看上方信息${default}"
+            cd ~
+            exit 1
         fi
     done
 

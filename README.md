@@ -20,18 +20,18 @@ pip3 install pyserial
 [EBB]
 ID=c5360983cdc4
 MODE=CAN
-CONFIG=~/LazyFirmware/config/btt-ebb-g0/can_1m.config
+CONFIG=/home/biqu/LazyFirmware/config/btt-ebb-g0/can_1m.config
 
 [M8P]
 ID=962b136468fc
 MODE=CAN_BRIDGE_KATAPULT
-CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
+CONFIG=/home/biqu/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
 KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373135-if00
 
 #[OCTOPUS_PRO]
 #ID=fea6ca620740
 #MODE=CAN_BRIDGE
-#CONFIG=~/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
+#CONFIG=/home/biqu/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
 
 #[OCTOPUS_PRO]
 #ID=/dev/serial/by-id/usb-Klipper_stm32...
@@ -52,7 +52,7 @@ MODE=从CAN/USB/CAN_BRIDGE/CAN_BRIDGE_KATAPULT中选择1个，其中
      CAN_BRIDGE表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge；
      CAN_BRIDGE_KATAPULT表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge，
      但是BootLoader使用katapult且katapult的通讯接口为USB
-CONFIG=编译klipper固件的配置文件路径
+CONFIG=编译klipper固件的配置文件路径。不能是~/开头，必须使用/home/biqu/这样的绝对路径
 KATAPULT_SERIAL=katapult激活时的/dev/serial/by-id/*
      获取方法：
      写入的katapult固件在编译时需要选中Support bootloader entry on rapid double click of reset button，
