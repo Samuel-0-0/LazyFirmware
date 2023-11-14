@@ -15,7 +15,7 @@ pip3 install pyserial
 ```
 
 ### 三、修改config.cfg文件
-配置文件示例
+新增config.cfg文件，文件内容示例：
 ```
 [EBB]
 ID=c5360983cdc4
@@ -39,7 +39,7 @@ KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373
 #CONFIG=~/LazyFirmware/config/btt-octopus-pro-f446/usb.config
 
 ```
-配置说明
+配置项说明
 ```
 [主板名字]
 ID=主板的UUID或者/dev/serial/by-id/*
