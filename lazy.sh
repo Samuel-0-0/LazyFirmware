@@ -8,6 +8,10 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
+# 配置文件
+current_dir=$(dirname "$0")
+config_file="${current_dir}/config.cfg"
+
 clear
 
 ##自定义打印信息颜色
@@ -16,11 +20,11 @@ yellow=$(echo -en "\e[93m")
 red=$(echo -en "\e[91m")
 default=$(echo -en "\e[39m")
 
-## ROOT检测
+##ROOT检测
 [ $(id -u) -eq 0 ] || [ "$EUID" -eq 0 ] && echo -e "${red}请不要以ROOT身份或者SUDO运行本脚本！在需要的时候，脚本会请求相应的权限。${default}" && exit 1
 
 ##更新控制板固件
-UPDATE_MCU() {
+update_mcu() {
     echo -e ""
     echo -e "${yellow}准备更新klipper固件，匹配配置文件...${default}"
     echo -e "$2"
@@ -84,7 +88,6 @@ UPDATE_MCU() {
     fi
 }
 
-
 ##检查katapult
 check_katapult() {
     cd ~
@@ -121,74 +124,93 @@ check_katapult() {
 
 
 ##停止klipper服务
-echo -e ""
-echo -e "${yellow}正在停止klipper服务...${default}"
-sudo service klipper stop
-if [ $? -eq 0 ]; then
-    echo -e "${green}完成${default}"
-else
+stop_klipper_service() {
     echo -e ""
-    echo -e "${red}klipper服务停止失败，详情请查看上方信息${default}"
-    exit 1
-fi
+    echo -e "${yellow}正在停止klipper服务...${default}"
+    sudo service klipper stop
+    if [ $? -eq 0 ]; then
+        echo -e "${green}完成${default}"
+    else
+        echo -e ""
+        echo -e "${red}klipper服务停止失败，详情请查看上方信息${default}"
+        exit 1
+    fi
+}
+
+##启动klipper服务
+start_klipper_service() {
+    echo -e ""
+    echo -e "${yellow}正在启动klipper服务...${default}"
+    sudo service klipper start
+    if [ $? -eq 0 ]; then
+        echo -e "${green}完成${default}"
+    else
+        echo -e ""
+        echo -e "${red}klipper服务启动失败，详情请查看上方信息${default}"
+        exit 1
+    fi
+}
+
+##获取配置
+get_config() {
+    section=$1
+    key=$2
+    #echo "参数1：$section"
+    #echo "参数2：$key"
+    value=`awk -F '=' '/\['$section'\]/{a=1}a==1&&$1~/'$key'/{print $2;exit}' $config_file`
+    echo "$value"
+}
 
 ##检查katapult
 #check_katapult
 
-##############################################################################################
-#  >>>用户配置区域<<<
-#  请根据自己的实际情况依次更新下方1、2、3的内容
-#---------------------------------------------------------------------------------------------
-#  1、主板CAN UUID或者通讯端口
-#---------------------------------------------------------------------------------------------
-#  USB固件使用命令： "ls -l /dev/serial/by-id/" 获取通讯端口号填入下方
-#  CAN或者CAN Bridge固件使用命令：
-#  "~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0" 获取CAN UUID
+##主程序
+# 先判断配置文件是否存在，如果存在统计section数量
+if [ -f "$config_file" ]; then
+    # 初始化数组
+    declare -a sections=()
+    # 逐行读取文件
+    while IFS= read -r line; do
+        # 如果是以 [ 开头但不以 # 开头的行，则将内容添加到数组中
+        if [[ $line =~ ^\[[^\#] ]]; then
+            # 去除可能存在的空格
+            section=$(echo "$line" | tr -d '[]' | tr -d '\r')
+            # 将内容添加到数组中
+            sections+=("$section")
+        fi
+    done < "$config_file"
+    
+    echo -e "${green}当前配置共有${#sections[@]}块主板需要升级固件${default}"
 
-EBB_UUID=c5360983cdc4
-M8P_UUID=962b136468fc
-M8P_KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373135-if00
-#M8P_SERIAL=/dev/serial/by-id/usb-Klipper_stm32...
-#OCTOPUS_PRO_SERIAL=/dev/serial/by-id/usb-Klipper_stm32...
+    # 停止klipper服务
+    stop_klipper_service
 
-#---------------------------------------------------------------------------------------------
-#  2、主板klipper配置文件路径
-#---------------------------------------------------------------------------------------------
-EBB_CONFIG=~/LazyFirmware/config/btt-ebb-g0/can_1m.config
-M8P_CAN_BRIDGE_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
-#M8P_USB_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/usb.config
-#OCTOPUS_PRO_CAN_BRIDGE_CONFIG=~/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
+    # 依次执行升级
+    for section in "${sections[@]}"; do
+        echo -e ""
+        echo -e "${yellow}准备升级 $section ...${default}"
+        ID=`get_config $section "ID"`
+        #echo "$ID"
+        MODE=`get_config $section "MODE"`
+        #echo "$MODE"
+        CONFIG=`get_config $section "CONFIG"`
+        #echo "$CONFIG"
+        if [[ $MODE =~ "CAN_BRIDGE_KATAPULT" ]]; then
+            KATAPULT_SERIAL=`get_config $section "KATAPULT_SERIAL"`
+            #echo "$KATAPULT_SERIAL"
+            update_mcu $ID $CONFIG $MODE $KATAPULT_SERIAL
+        else
+            echo ""
+            update_mcu $ID $CONFIG $MODE
+        fi
+    done
 
-#---------------------------------------------------------------------------------------------
-#  3、更新方案
-#---------------------------------------------------------------------------------------------
-#  使用方法：
-#  UPDATE_MCU [MCU] [MCU_CONFIG] [CAN/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/USB] [KATAPULT_SERIAL]
-#  其中[MCU]表示主板的UUID或者通讯端口，[MCU_CONFIG]表示对应主板klipper配置文件路径，
-#  [CAN/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/USB]分别对应不同的更新方式，
-#  CAN_BRIDGE_KATAPULT方式需要附带主板在进入KATAPULT状态后的通讯端口
-
-UPDATE_MCU $EBB_UUID $EBB_CONFIG CAN
-UPDATE_MCU $M8P_UUID $M8P_CAN_BRIDGE_CONFIG CAN_BRIDGE_KATAPULT $M8P_KATAPULT_SERIAL
-#UPDATE_MCU $M8P_SERIAL $M8P_USB_CONFIG USB
-#UPDATE_MCU $OCTOPUS_PRO_SERIAL $OCTOPUS_PRO_CAN_BRIDGE_CONFIG CAN_BRIDGE_DFU
-
-##############################################################################################
-
-
-##启动klipper服务
-echo -e ""
-echo -e "${yellow}正在启动klipper服务...${default}"
-sudo service klipper start
-if [ $? -eq 0 ]; then
-    echo -e "${green}完成${default}"
-else
+    # 启动klipper服务
+    start_klipper_service
     echo -e ""
-    echo -e "${red}klipper服务启动失败，详情请查看上方信息${default}"
+    echo -e "${green}本次固件更新工作已全部完成，祝你打印顺利！${default}"
+    echo -e ""
+else
+    echo -e "${red}${config_file} 文件不存在，请检查配置文件是否存在${default}"
     exit 1
 fi
-
-
-echo -e ""
-echo -e "${green}本次固件更新工作已全部完成，祝你打印顺利！${default}"
-echo -e ""

@@ -14,53 +14,52 @@ git clone https://github.com/Samuel-0-0/LazyFirmware
 pip3 install pyserial
 ```
 
-### 三、修改lazy.sh文件
-找到下面的内容
+### 三、修改config.cfg文件
+配置文件示例
 ```
-##############################################################################################
-#  >>>用户配置区域<<<
-#  请根据自己的实际情况依次更新下方1、2、3的内容
-#---------------------------------------------------------------------------------------------
-#  1、主板CAN UUID或者通讯端口
-#---------------------------------------------------------------------------------------------
-#  USB固件(包括使用USB通讯的KATAPULT固件)使用命令： "ls -l /dev/serial/by-id/" 获取通讯端口号填入下方
-#  CAN或者CAN Bridge固件使用命令：
-#  "~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0" 获取CAN UUID
+[EBB]
+ID=c5360983cdc4
+MODE=CAN
+CONFIG=~/LazyFirmware/config/btt-ebb-g0/can_1m.config
 
-EBB_UUID=c5360983cdc4
-M8P_UUID=962b136468fc
-M8P_KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373135-if00
-#M8P_SERIAL=/dev/serial/by-id/usb-Klipper_stm32...
-#OCTOPUS_PRO_SERIAL=/dev/serial/by-id/usb-Klipper_stm32...
+[M8P]
+ID=962b136468fc
+MODE=CAN_BRIDGE_KATAPULT
+CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
+KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373135-if00
 
-#---------------------------------------------------------------------------------------------
-#  2、主板klipper配置文件路径
-#---------------------------------------------------------------------------------------------
-EBB_CONFIG=~/LazyFirmware/config/btt-ebb-g0/can_1m.config
-M8P_CAN_BRIDGE_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
-#M8P_USB_CONFIG=~/LazyFirmware/config/btt-manta-m8p-h723/usb.config
-#OCTOPUS_PRO_CAN_BRIDGE_CONFIG=~/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
+#[OCTOPUS_PRO]
+#ID=fea6ca620740
+#MODE=CAN_BRIDGE
+#CONFIG=~/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
 
-#---------------------------------------------------------------------------------------------
-#  3、更新方案
-#---------------------------------------------------------------------------------------------
-#  使用方法：
-#  UPDATE_MCU [MCU] [MCU_CONFIG] [CAN/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/USB] [KATAPULT_SERIAL]
-#  其中[MCU]表示主板的UUID或者通讯端口，[MCU_CONFIG]表示对应主板klipper配置文件路径，
-#  [CAN/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/USB]分别对应不同的更新方式，
-#  CAN_BRIDGE_KATAPULT方式需要附带主板在进入KATAPULT状态后的通讯端口
-
-UPDATE_MCU $EBB_UUID $EBB_CONFIG CAN
-UPDATE_MCU $M8P_UUID $M8P_CAN_BRIDGE_CONFIG CAN_BRIDGE_KATAPULT $M8P_KATAPULT_SERIAL
-#UPDATE_MCU $M8P_SERIAL $M8P_USB_CONFIG USB
-#UPDATE_MCU $OCTOPUS_PRO_SERIAL $OCTOPUS_PRO_CAN_BRIDGE_CONFIG CAN_BRIDGE_DFU
-
-##############################################################################################
+#[OCTOPUS_PRO]
+#ID=/dev/serial/by-id/usb-Klipper_stm32...
+#MODE=USB
+#CONFIG=~/LazyFirmware/config/btt-octopus-pro-f446/usb.config
 
 ```
-分别修改其中的1、2、3，案例如上所示。
+配置说明
+```
+[主板名字]
+ID=主板的UUID或者/dev/serial/by-id/*
+     获取方法：
+     控制板通过USB连接并且klipper固件通讯接口为USB，使用命令 ls /dev/serial/by-id/* 获取
+     其他情况，使用命令 ~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0 获取
+MODE=从CAN/USB/CAN_BRIDGE/CAN_BRIDGE_KATAPULT中选择1个，其中
+     CAN表示控制板通过CAN总线连接，klipper固件通讯接口为CAN；
+     USB表示控制板通过USB连接，klipper固件通讯接口为USB；
+     CAN_BRIDGE表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge；
+     CAN_BRIDGE_KATAPULT表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge，
+     但是BootLoader使用katapult且katapult的通讯接口为USB
+CONFIG=编译klipper固件的配置文件路径
+KATAPULT_SERIAL=katapult激活时的/dev/serial/by-id/*
+     获取方法：
+     写入的katapult固件在编译时需要选中Support bootloader entry on rapid double click of reset button，
+     按2下主板上的reset键，使用命令 ls /dev/serial/by-id/* 获取
+```
 
-如果没有符合你的主板的配置文件，第一次使用请自己手动到klipper进行配置
+如果config文件夹中没有符合你的主板的配置文件，第一次使用请自己手动到klipper进行配置
 ```
 cd ~/klipper
 make menuconfig
@@ -72,7 +71,7 @@ make menuconfig
 cp .config ~/LazyFirmware/config/你的主板名字/配置文件名字
 ```
 
-遵循下列命名规则，便于区分各型号主板：
+配置文件名字遵循下列命名规则，便于区分各型号主板：
 ```
 btt-manta-m8p-h723/can_bridge_1m.config
 厂商-主板系列-主板型号-主控型号/固件类型_速率.config
