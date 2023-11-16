@@ -12,7 +12,7 @@ KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373
 [HOST]
 ID=NULL
 MODE=HOST
-CONFIG=/home/samuel/LazyFirmware/config/linux_process/linux.config
+CONFIG=/home/biqu/LazyFirmware/config/linux_process/linux.config
 
 #[OCTOPUS_PRO]
 #ID=fea6ca620740
