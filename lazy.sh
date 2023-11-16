@@ -72,6 +72,9 @@ update_mcu() {
     # 如果使用USB固件
     elif [ "$3" == "USB" ]; then
         make flash FLASH_DEVICE=$1
+    # 如果是上位机
+    elif [ "$3" == "HOST" ]; then
+        make flash
     fi
 }
 

@@ -9,6 +9,11 @@ MODE=CAN_BRIDGE_KATAPULT
 CONFIG=/home/biqu/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
 KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373135-if00
 
+[HOST]
+ID=NULL
+MODE=HOST
+CONFIG=/home/samuel/LazyFirmware/config/linux_process/linux.config
+
 #[OCTOPUS_PRO]
 #ID=fea6ca620740
 #MODE=CAN_BRIDGE
