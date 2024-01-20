@@ -16,7 +16,7 @@ CONFIG=/home/biqu/LazyFirmware/config/linux_process/linux.config
 
 #[OCTOPUS_PRO]
 #ID=fea6ca620740
-#MODE=CAN_BRIDGE
+#MODE=CAN_BRIDGE_DFU
 #CONFIG=/home/biqu/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
 
 #[OCTOPUS_PRO]
