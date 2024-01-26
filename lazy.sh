@@ -37,7 +37,7 @@ update_mcu() {
     fi
     echo -e ""
     echo -e "${yellow}正在编译klipper固件，请耐心等待...${default}"
-    cd ~/klipper
+    pushd ~/klipper
     make olddefconfig
     make clean
     make
@@ -76,6 +76,7 @@ update_mcu() {
     elif [ "$3" == "HOST" ]; then
         make flash
     fi
+    popd
 }
 
 ##检查katapult
@@ -197,11 +198,9 @@ if [ -f "$config_file" ]; then
         then
             echo -e ""
             echo -e "${green}已完成 $section 固件更新${default}"
-            cd ~
         else
             echo -e ""
             echo -e "${red}$section 固件更新失败，详情请查看上方信息${default}"
-            cd ~
             exit 1
         fi
     done
