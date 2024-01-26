@@ -35,7 +35,7 @@ CONFIG=/home/samuel/LazyFirmware/config/linux_process/linux.config
 
 #[OCTOPUS_PRO]
 #ID=fea6ca620740
-#MODE=CAN_BRIDGE
+#MODE=CAN_BRIDGE_DFU
 #CONFIG=/home/biqu/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
 
 #[OCTOPUS_PRO]
@@ -51,10 +51,10 @@ ID=主板的UUID或者/dev/serial/by-id/*，如果是上位机填NULL
      获取方法：
      控制板通过USB连接并且klipper固件通讯接口为USB，使用命令 ls /dev/serial/by-id/* 获取
      其他情况，使用命令 ~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0 获取
-MODE=从CAN/USB/CAN_BRIDGE/CAN_BRIDGE_KATAPULT/HOST中选择1个，其中
+MODE=从CAN/USB/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/HOST中选择1个，其中
      CAN表示控制板通过CAN总线连接，klipper固件通讯接口为CAN；
      USB表示控制板通过USB连接，klipper固件通讯接口为USB；
-     CAN_BRIDGE表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge；
+     CAN_BRIDGE_DFU表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge，BootLoader为官方自带；
      CAN_BRIDGE_KATAPULT表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge，
      但是BootLoader使用katapult且katapult的通讯接口为USB；
      HOST表示上位机
