@@ -14,18 +14,22 @@ git clone https://github.com/Samuel-0-0/LazyFirmware
 pip3 install pyserial
 ```
 
-### 三、修改config.cfg文件
-新增config.cfg文件，文件内容示例：
+### 三、配置config.cfg文件
+```
+mkdir ${HOME}/printer_data/config/lazyfirmware
+touch ${HOME}/printer_data/config/lazyfirmware/config.cfg
+```
+修改config.cfg文件，文件内容示例：
 ```
 [EBB]
 ID=c5360983cdc4
 MODE=CAN
-CONFIG=/home/biqu/LazyFirmware/config/btt-ebb-g0/can_1m.config
+CONFIG=/home/samuel/LazyFirmware/config/btt-ebb-g0/can_1m.config
 
 [M8P]
 ID=962b136468fc
 MODE=CAN_BRIDGE_KATAPULT
-CONFIG=/home/biqu/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
+CONFIG=/home/samuel/LazyFirmware/config/btt-manta-m8p-h723/can_bridge_1m.config
 KATAPULT_SERIAL=/dev/serial/by-id/usb-katapult_stm32h723xx_38000A001851313434373135-if00
 
 [HOST]
@@ -36,12 +40,12 @@ CONFIG=/home/samuel/LazyFirmware/config/linux_process/linux.config
 #[OCTOPUS_PRO]
 #ID=fea6ca620740
 #MODE=CAN_BRIDGE_DFU
-#CONFIG=/home/biqu/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
+#CONFIG=/home/samuel/LazyFirmware/config/btt-octopus-pro-f446/can_bridge_1m.config
 
 #[OCTOPUS_PRO]
 #ID=/dev/serial/by-id/usb-Klipper_stm32...
 #MODE=USB
-#CONFIG=/home/biqu/LazyFirmware/config/btt-octopus-pro-f446/usb.config
+#CONFIG=/home/samuel/LazyFirmware/config/btt-octopus-pro-f446/usb.config
 
 ```
 配置项说明
@@ -74,7 +78,7 @@ make menuconfig
 
 然后执行
 ```
-cp .config ~/LazyFirmware/config/你的主板名字/配置文件名字
+cp .config ${HOME}/printer_data/config/lazyfirmware/你的主板名字/配置文件名字
 ```
 
 配置文件名字遵循下列命名规则，便于区分各型号主板：

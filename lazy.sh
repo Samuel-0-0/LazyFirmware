@@ -9,8 +9,7 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
 # 配置文件
-current_dir=$(dirname "$0")
-config_file="${current_dir}/config.cfg"
+config_file="${HOME}/printer_data/config/lazyfirmware/config.cfg"
 
 clear
 
