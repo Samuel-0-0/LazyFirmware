@@ -10,6 +10,7 @@
 
 # 配置文件
 config_file="${HOME}/printer_data/config/lazyfirmware/config.cfg"
+klipper_scripts="${HOME}/klipper/scripts"
 
 clear
 
@@ -67,10 +68,27 @@ update_mcu() {
         sleep 5 &
         wait
         # 进入KATAPULT后的设备有独立的通讯端口号
-        python3 ~/katapult/scripts/flashtool.py -d $4
-    # 如果使用USB固件
-    elif [ "$3" == "USB" ]; then
+        #python3 ~/katapult/scripts/flashtool.py -d $4
+        make flash FLASH_DEVICE=$4
+    # 如果使用USB固件，并且使用DFU更新
+    elif [ "$3" == "USB_DFU" ]; then
         make flash FLASH_DEVICE=$1
+    # 如果使用USB固件，并且使用KATAPULT更新
+    elif [ "$3" == "USB_KATAPULT" ]; then
+        python3 -c "
+import sys
+sys.path.append('${klipper_scripts}')  # 将环境变量传递给 Python，添加到 sys.path 中
+import flash_usb as u
+u.enter_bootloader('$1')
+"
+        echo -e ""
+        echo -e "${red}正在将控制板切换到KATAPULT，请耐心等待2秒...${default}"
+        echo -e ""
+        # 等待2秒
+        sleep 2 &
+        wait
+        # 进入KATAPULT后的设备有独立的通讯端口号
+        python3 ~/katapult/scripts/flashtool.py -d $4
     # 如果是上位机
     elif [ "$3" == "HOST" ]; then
         make flash
@@ -185,7 +203,7 @@ if [ -f "$config_file" ]; then
         #echo "$MODE"
         CONFIG=`get_config $section "CONFIG"`
         #echo "$CONFIG"
-        if [ "$MODE" == "CAN_BRIDGE_KATAPULT" ]; then
+        if [[ "$MODE" == "CAN_BRIDGE_KATAPULT" || "$MODE" == "USB_KATAPULT" ]]; then
             KATAPULT_SERIAL=`get_config $section "KATAPULT_SERIAL"`
             #echo "$KATAPULT_SERIAL"
             update_mcu $ID $CONFIG $MODE $KATAPULT_SERIAL
