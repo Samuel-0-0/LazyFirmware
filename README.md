@@ -57,22 +57,28 @@ CONFIG=/home/samuel/LazyFirmware/config/linux_process/linux.config
 配置项说明
 ```
 [主板名字]
-ID=主板的UUID或者/dev/serial/by-id/*，如果是上位机填NULL
-     获取方法：
-     控制板通过USB连接并且klipper固件通讯接口为USB，使用命令 ls /dev/serial/by-id/* 获取
-     其他情况，使用命令 ~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0 获取
+ID=主板的UUID或者/dev/serial/by-id/*路径，如果是上位机填NULL
+    获取方法：
+    控制板通过USB连接并且klipper固件通讯接口为USB，使用命令 ls /dev/serial/by-id/* 获取
+    CAN或者CAN_BRIDGE固件，使用命令 ~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0 获取
 MODE=从CAN/USB_DFU/USB_KATAPULT/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT/HOST中选择1个，其中
-     - CAN表示控制板通过CAN总线连接，klipper固件通讯接口为CAN；
-     - USB_DFU表示控制板通过USB连接，klipper固件通讯接口为USB，BootLoader为官方自带或没有；
-     - USB_KATAPULT表示控制板通过USB连接，klipper固件通讯接口为USB，BootLoader为katapult；
-     - CAN_BRIDGE_DFU表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge，BootLoader为官方自带或没有；
-     - CAN_BRIDGE_KATAPULT表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge，BootLoader使用katapult且通讯接口为USB；
+     - CAN表示控制板通过CAN总线连接，klipper固件通讯接口为CAN，
+           BootLoader为katapult，且katapult编译时的通讯接口选择的是CAN；
+     - USB_DFU表示控制板通过USB连接，klipper固件通讯接口为USB，
+           BootLoader为官方自带；
+     - USB_KATAPULT表示控制板通过USB连接，klipper固件通讯接口为USB，
+           BootLoader为katapult，且katapult编译时的通讯接口选择的是USB；
+     - CAN_BRIDGE_DFU表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge，
+           BootLoader为官方自带；
+     - CAN_BRIDGE_KATAPULT表示控制板通过USB连接，klipper固件通讯接口为USB to CAN bus bridge，
+           BootLoader使用katapult，且katapult编译时的通讯接口选择的是USB；
      - HOST表示上位机；
 CONFIG=编译klipper固件的配置文件路径。不能是~/开头，必须使用如/home/biqu/这样的绝对路径
-KATAPULT_SERIAL=katapult激活时的/dev/serial/by-id/*
-     获取方法：
-     写入的katapult固件在编译时需要选中Support bootloader entry on rapid double click of reset button，
-     按2下主板上的reset键，使用命令 ls /dev/serial/by-id/* 获取
+KATAPULT_SERIAL=katapult激活时的/dev/serial/by-id/*路径
+    KATAPULT_SERIAL获取方法：
+    katapult固件在编译时需要选中Support bootloader entry on rapid double click of reset button，
+    katapult写入MCU后，按2下主板上的reset键，使用命令 ls /dev/serial/by-id/* 获取
+
 ```
 
 如果config文件夹中没有符合你的主板的配置文件，第一次使用请自己手动到klipper进行配置
@@ -89,11 +95,12 @@ cp .config ${HOME}/printer_data/config/lazyfirmware/你的主板名字/配置文
 
 配置文件名字遵循下列命名规则，便于区分各型号主板：
 ```
-btt-manta-m8p-h723/can_bridge_1m.config
-厂商-主板系列-主板型号-主控型号/固件类型_速率.config
+btt-manta-m8p-h723/klipper_can_bridge_1m.config
+厂商-主板系列-主板型号-主控型号/固件系统_连接类型_速率.config
 
-固件类型：can/can_bridge/usb
-速率：250k/500k/1m
+固件系统：klipper/katapult
+连接类型：CAN/USB_DFU/USB_KATAPULT/CAN_BRIDGE_DFU/CAN_BRIDGE_KATAPULT
+速率（使用CAN连接时）：250k/500k/1m
 ```
 
 ### 四、更新MCU固件
