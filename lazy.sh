@@ -27,12 +27,11 @@ default=$(echo -en "\e[39m")
 update_mcu() {
     echo -e "${yellow}匹配配置文件...$2${default}"
     cp -f "$2" ~/klipper/.config
-    if [ $? -eq 0 ]
-    then
+    if [ $? -eq 0 ]; then
         echo -e "${green}配置文件匹配完成${default}"
     else
         echo -e ""
-        echo -e "${red}配置文件匹配失败，详情请查看上方信息${default}"
+        echo -e "${red}配置文件匹配失败${default}"
         exit 1
     fi
     echo -e ""
@@ -46,10 +45,10 @@ update_mcu() {
     echo -e ""
     # 如果使用CAN固件
     if [ "$3" == "CAN" ]; then
-        python3 ~/katapult/scripts/flashtool.py -i can0 -f ~/klipper/out/klipper.bin -u $1
+        python3 ~/katapult/scripts/flashtool.py -i ${can_interface:="can0"} -f ~/klipper/out/klipper.bin -u $1
     # 如果使用CAN_BRIDGE固件，并且使用DFU模式更新
     elif [ "$3" == "CAN_BRIDGE_DFU" ]; then        
-        python3 ~/katapult/scripts/flashtool.py -i can0 -u $1 -r
+        python3 ~/katapult/scripts/flashtool.py -i ${can_interface:="can0"} -u $1 -r
         echo -e ""
         echo -e "${red}正在将控制板切换到DFU，请耐心等待5秒...${default}"
         echo -e ""
@@ -60,7 +59,7 @@ update_mcu() {
         make flash FLASH_DEVICE=0483:df11
     # 如果使用CAN_BRIDGE固件，并且使用KATAPULT更新
     elif [ "$3" == "CAN_BRIDGE_KATAPULT" ]; then        
-        python3 ~/katapult/scripts/flashtool.py -i can0 -u $1 -r
+        python3 ~/katapult/scripts/flashtool.py -i ${can_interface:="can0"} -u $1 -r
         echo -e ""
         echo -e "${red}正在将控制板切换到KATAPULT，请耐心等待5秒...${default}"
         echo -e ""
@@ -188,37 +187,40 @@ if [ -f "$config_file" ]; then
         fi
     done < "$config_file"
     
-    echo -e "${green}共有${#sections[@]}块主板需要更新固件${default}"
+    echo -e "${green}共有$(( ${#sections[@]} - 1 ))块主板需要更新固件${default}"
 
     # 停止klipper服务
     stop_klipper_service
 
     # 依次执行更新
     for section in "${sections[@]}"; do
-        echo -e ""
-        echo -e "${yellow}准备更新 $section ...${default}"
-        ID=`get_config $section "ID"`
-        #echo "$ID"
-        MODE=`get_config $section "MODE"`
-        #echo "$MODE"
-        CONFIG=`get_config $section "CONFIG"`
-        #echo "$CONFIG"
-        if [[ "$MODE" == "CAN_BRIDGE_KATAPULT" || "$MODE" == "USB_KATAPULT" ]]; then
-            KATAPULT_SERIAL=`get_config $section "KATAPULT_SERIAL"`
-            #echo "$KATAPULT_SERIAL"
-            update_mcu $ID $CONFIG $MODE $KATAPULT_SERIAL
-        else
-            #echo ""
-            update_mcu $ID $CONFIG $MODE
-        fi
-        if [ $? -eq 0 ]
-        then
-            echo -e ""
-            echo -e "${green}已完成 $section 固件更新${default}"
+        if [[ ${section} == "global" ]]; then
+            can_interface=$(get_config "global" "can_interface")
         else
             echo -e ""
-            echo -e "${red}$section 固件更新失败，详情请查看上方信息${default}"
-            exit 1
+            echo -e "${yellow}准备更新 ${section} ...${default}"
+            ID=$(get_config ${section} "ID")
+            #echo "$ID"
+            MODE=$(get_config ${section} "MODE")
+            #echo "$MODE"
+            CONFIG=$(get_config ${section} "CONFIG")
+            #echo "$CONFIG"
+            if [[ "$MODE" == "CAN_BRIDGE_KATAPULT" || "$MODE" == "USB_KATAPULT" ]]; then
+                KATAPULT_SERIAL=$(get_config ${section} "KATAPULT_SERIAL")
+                #echo "$KATAPULT_SERIAL"
+                update_mcu $ID $CONFIG $MODE $KATAPULT_SERIAL
+            else
+                #echo ""
+                update_mcu $ID $CONFIG $MODE
+            fi
+            if [ $? -eq 0 ]; then
+                echo -e ""
+                echo -e "${green}已完成 ${section} 固件更新${default}"
+            else
+                echo -e ""
+                echo -e "${red}${section} 固件更新失败，详情请查看上方信息${default}"
+                exit 1
+            fi
         fi
     done
 
