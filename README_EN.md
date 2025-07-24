@@ -2,6 +2,7 @@
 A one-click solution for lazy people to upgrade 3D printer mainboard MCU Klipper firmware
 
 ## Usage Guide
+Katapult/klipper firmware must be installed before use.
 
 ### 1. Download LazyFirmware
 ```
