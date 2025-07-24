@@ -5,7 +5,10 @@ https://github.com/Samuel-0-0/LazyFirmware/blob/main/README_EN.md
 适合懒人一键升级3D打印机控制板MCU的Klipper固件
 
 ## 使用方法
-使用前必须已经安装过katapult/klipper固件
+
+> [!WARNING]
+> 使用前必须已经安装过katapult/klipper固件
+> 
 
 ### 一、下载LazyFirmware
 ```
