@@ -197,6 +197,11 @@ update_mcu() {
             echo -e "\n${red}$(printf "$MSG_SWITCHING_KATAPULT" 2)${default}\n"
             sleep 2
             python3 ~/katapult/scripts/flashtool.py -f ~/klipper/out/klipper.bin -d "$4" || return 1;;
+        USB_SERIAL)
+            python3 ~/katapult/scripts/flashtool.py -d "$1" -r
+            echo -e "\n${red}$(printf "$MSG_SWITCHING_KATAPULT" 2)${default}\n"
+            sleep 2
+            python3 ~/katapult/scripts/flashtool.py -f ~/klipper/out/klipper.bin -d "$1" || return 1;;
         HOST)
             make flash || return 1;;
     esac
