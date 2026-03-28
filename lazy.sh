@@ -80,6 +80,7 @@ if [[ "$lang" == "zh_cn" ]]; then
     MSG_UPDATE_FAIL="%s 固件更新失败，请查看上方信息"
     MSG_SWITCHING_KATAPULT="正在将控制板切换到KATAPULT，请等待 %s 秒..."
     MSG_SWITCHING_DFU="正在将控制板切换到DFU，请等待 %s 秒..."
+    MSG_INVALID_MODE="无效的MODE: %s，请检查配置文件"
 else
     MSG_MATCHING_CONFIG="Matching config file..."
     MSG_CONFIG_SUCCESS="Config file matched successfully"
@@ -102,6 +103,7 @@ else
     MSG_UPDATE_FAIL="%s firmware update failed. See messages above."
     MSG_SWITCHING_KATAPULT="Switching board to KATAPULT, please wait %s seconds..."
     MSG_SWITCHING_DFU="Switching board to DFU, please wait %s seconds..."
+    MSG_INVALID_MODE="Invalid MODE: %s. Please check your config file"
 fi
 
 #------------------------------------------------------------
@@ -204,6 +206,9 @@ update_mcu() {
             python3 ~/katapult/scripts/flashtool.py -f ~/klipper/out/klipper.bin -d "$1" || return 1;;
         HOST)
             make flash || return 1;;
+        *)
+            printf "\n${red}%s${default}\n" "$(printf "$MSG_INVALID_MODE" "$3")"
+            return 1;;
     esac
     return 0
 }
@@ -248,11 +253,12 @@ if [ -f "$config_file" ]; then
         else
             update_mcu "$ID" "$CONFIG" "$MODE"
         fi
+        update_status=$?
         popd >/dev/null
 
         # Show success/failure
         # 显示成功/失败
-        if [ $? -eq 0 ]; then
+        if [ $update_status -eq 0 ]; then
             printf "\n${green}%s${default}\n" "$(printf "$MSG_UPDATE_SUCCESS" "$section")"
         else
             printf "\n${red}%s${default}\n" "$(printf "$MSG_UPDATE_FAIL" "$section")"
